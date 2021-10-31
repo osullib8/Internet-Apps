@@ -1,0 +1,65 @@
+<html>
+    <body>
+        <div id="app">
+        
+            <h1>Welcome to the Your Travel Forecast</h1>
+            Please enter your Destination
+            <br>
+            Destination<input v-model="Dest">
+            <br><br>
+            <button v-on:click="GetDest">Generate Forecast</button>
+            Location {{Dest}}
+            <br>
+            <div v-if="temp.length>=1">
+                <span>pack for at most: </span>
+                <span v-if="Max>20">Hot</span><span v-else-if="Max>10">Warm</span><span v-else-if="Max<10">Cold</span><br>
+                <span>pack for at least: </span>
+                <span v-if="Min>20">Hot</span><span v-else-if="Min>10">Warm</span><span v-else-if="Min<10">Cold</span><br>
+                <span v-if="Rain"> Bring an Umbrella</span><br>
+                <span v-if="Pol>10">Bring a Mask</span>
+            </div>
+            <div v-if="temp.length>=1" v-for="index in 5">
+                <br>
+                Day {{index-1}}:
+                <span> Temperature: {{temp[index-1]}}°C </span>
+                <br>
+                <span> Wind Speed: {{wind[index-1]}}km/hr </span>
+                <br>
+                <span> Day Description: {{rain_descip[index-1]}}</span>
+                <br>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+            new Vue({
+                 el:'#app',
+                 data:{
+                     Dest: '',
+                    temp: [],
+                    Max: '',
+                    Min: '',
+                    wind: [],
+                    Pol: '',
+                    Rain: false,
+                    rain_descip: [],},
+                 methods:{
+                     GetDest : getAPI, 
+                    }
+            })
+            function getAPI (){
+                console.log("getAPI called")
+                let prom = fetch("/api/"+this.Dest)
+                prom.then( response => response.json()) 
+                    .then (response =>{ 
+                            this.temp = response.temp
+                            this.Max = response.Max
+                            this.Min = response.Min
+                            this.wind = response.wind
+                            this.Rain = response.Rain
+                            this.rain_descip = response.rain_level
+                            this.Pol = response.Pol
+                    })
+            }
+        </script>
+    </body>
+</html>
