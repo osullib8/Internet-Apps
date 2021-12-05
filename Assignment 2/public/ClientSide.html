@@ -1,0 +1,100 @@
+<html>
+    <body>
+        <div id="app">
+        
+            <h1>Welcome to the Movie Thingy</h1>
+            <br><br>
+            <button v-on:click="Create">Create Database</button><br>
+            {{created}}
+            <br>
+            Please enter the first letter of a movie title (CAPITAL LETTER), the year of release and the rating to query the database
+            <br>
+            Movie<input v-model="movie">
+            Year<input v-model="year">
+            Rating<input v-model="rating">
+            <br><br>
+            <button v-on:click="QuaryDatabase">Query Database</button>
+            <br>{{queried}}<br>
+            <div v-if="search.length>0">
+                <br>
+                Title -- Releae Date -- Rating -- Rank
+                <br><br>
+                <div v-for="index in search.length">
+                    {{search[index-1]}}
+                <br>
+                </div>
+            </div>
+            <br>
+            <button v-on:click="Destroy">Destroy Database</button><br>
+            <br>{{destroyed}}<br>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+        <script>
+            new Vue({
+                 el:'#app',
+                 data:{
+                 movie: "",
+                 year: "",
+                 rating: 0,
+                 search: [],
+                 searchTitle: [],
+                 searchYear: [],
+                 searchRating: [],
+                 searchRank: [],
+                 created: "",
+                 queried: "",
+                 destroyed: ""
+                },
+                 methods:{
+                     Create : Create, QuaryDatabase: QuaryDatabase, Destroy : Destroy }
+            })
+        
+            function Create (){
+                let prom = fetch("/create")
+                prom.then( response => response.json()) 
+                    .then (response =>
+                    { 
+                        this.created = response.created
+                    })}
+
+            function QuaryDatabase (){
+                this.search = []
+                if (this.year == "" || this.movie == ""){
+                    this.queried = "Please enter correctly into the inputs"
+                }else{
+                    let prom = fetch("/query/"+this.year+"/"+this.movie)
+                    prom.then( response => response.json()) 
+                    .then (response =>
+                    { 
+                        this.searchTitle = response.title
+                        this.searchYear = response.release_date
+                        this.searchRating = response.rating
+                        this.searchRank = response.rank
+                        this.queried = "Here is your query"
+                        this.searchRating = this.searchRating.map(Number)
+                        for (let i = 0; i < this.searchTitle.length; i++){
+                            if (this.searchRating[i]>this.rating){
+                                this.search.push(this.searchTitle[i] + " -- " + this.searchYear[i].substr(0,10) + " -- " + this.searchRating[i] + " -- " + this.searchRank[i])
+                            }
+                        }
+                        if(this.searchTitle.length <= 0){
+                            this.queried = "No data was retrieved"
+                        }
+                    })}
+                }
+
+
+            function Destroy (){
+                let prom = fetch("/destroy")
+                console.log("error")
+                prom.then( response => response.json()) 
+                    .then (response =>
+                    {  
+                        this.destroyed = response.destroy
+                    })}
+        
+        </script>
+    </body>
+</html>
